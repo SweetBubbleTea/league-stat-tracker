@@ -1,0 +1,2 @@
+streamlit==1.11.0
+riotwatcher==3.2.3
