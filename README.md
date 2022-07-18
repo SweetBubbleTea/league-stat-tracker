@@ -1,13 +1,14 @@
 
 # League Stat Tracker
 
-A simple web application that is designed to provide statistical data for each game that was previously played in League of Legends. 
-The web application provides data on champion mastery, win rate, itemization, creep score, KDA, and many more. 
-
 ![MIT License](https://img.shields.io/github/license/sweetbubbletea/league-stat-tracker)
 ![issues](https://img.shields.io/github/issues/sweetbubbletea/league-stat-tracker)
 ![website](https://img.shields.io/website?url=https%3A%2F%2Fleague-stat-tracker.herokuapp.com)
 ![last commit](https://img.shields.io/github/last-commit/sweetbubbletea/league-stat-tracker)
+
+A simple web application that is designed to provide statistical data for each game that was previously played in League of Legends. 
+The web application provides data on champion mastery, win rate, itemization, creep score, KDA, and many more. 
+
 ## Disclaimer
 
 League Stat Tracker is a personal project that is not associated with Riot Games nor League of Legends in any shape or form.
@@ -48,5 +49,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-
