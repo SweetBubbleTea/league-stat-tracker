@@ -15,8 +15,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'Get Help': 'https://github.com/SweetBubbleTea',
-        'Report a bug': "https://github.com/SweetBubbleTea",
+        'Get Help': "https://github.com/SweetBubbleTea/league-stat-tracker",
+        'Report a bug': "https://github.com/SweetBubbleTea/league-stat-tracker/issues",
         'About': "# A League of Legends Stat Tracker"
     }
 )
@@ -203,7 +203,7 @@ try:
     st.sidebar.title("")
     with st.sidebar.expander("About this app"):
         st.write("Designed by **SweetBubbleTea** as a personal project.")
-        st.write("GitHub: https://github.com/SweetBubbleTea")
+        st.write("GitHub: https://github.com/SweetBubbleTea/league-stat-tracker")
         st.write("Used to track different stats from League of Legends")
 
 except ApiError as err:
