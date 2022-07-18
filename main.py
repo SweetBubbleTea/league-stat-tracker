@@ -7,7 +7,7 @@ from urllib.request import urlopen
 from riotwatcher import LolWatcher, ApiError
 import streamlit as st
 
-lol_watcher = LolWatcher("RGAPI-c7a2c25c-fd71-4231-8505-c78d66b30287")
+lol_watcher = LolWatcher(getKey())
 
 st.set_page_config(
     page_title="League Stats",
