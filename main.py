@@ -7,20 +7,30 @@ from urllib.request import urlopen
 from riotwatcher import LolWatcher, ApiError
 import streamlit as st
 
-win = False
+GAME_CHAMP_IMG_WIDTH = 40
+GAME_ITEM_SUM_WIDTH = 30
+MAX_TEAM_MEM = 5
+MAX_MASTERY_SHOWCASE = 5
+MINUTE = 60
+MIN_NUM_MATCHES_= 1
+MAX_NUM_MATCHES = 15
+
 kills = 0
 deaths = 0
 assists = 0
 cs = 0
+total_wins = 0
+total_losses = 0
+surrender = False
+win = False
 firstBlood = False
-items = []
 summoner1 = ""
 summoner2 = ""
 role = ""
 mode = ""
-surrender = False
-mastery_list = {}
+items = []
 captions = []
+mastery_list = {}
 
 st.set_page_config(
     page_title="League Stats",
@@ -40,6 +50,7 @@ st.empty().write("---")
 st.sidebar.header("Settings")
 personal_key = st.sidebar.text_input("Personal API Key", placeholder="Optional")
 
+
 if personal_key:
     lol_watcher = LolWatcher(str(personal_key))
 else:
@@ -50,7 +61,7 @@ region = st.sidebar.selectbox('Region',
                               ("North America", "Europe West", "Europe Nordic & East", "Oceania",
                                "Korea", "Japan", "Brazil", "LAS", "LAN", "Russia", "Turkey"))
 
-max_matches = st.sidebar.number_input("Number of Matches to Display", min_value=1, max_value=15, step=1)
+max_matches = st.sidebar.number_input("Number of Matches to Display", min_value=MIN_NUM_MATCHES_, max_value=MAX_NUM_MATCHES, step=1)
 
 champion_asset_json = "http://ddragon.leagueoflegends.com/cdn/12.13.1/data/en_US/champion.json"
 match_region = matchIdentifier(region)
@@ -75,8 +86,9 @@ try:
     mastery = lol_watcher.champion_mastery.by_summoner(region, summoner["id"])
     response = urlopen(champion_asset_json)
     champion = json.loads(response.read())
+
     for items, champ in enumerate(mastery):
-        if items != 5:
+        if items != MAX_MASTERY_SHOWCASE:
             mastery_list[items] = [str(champ["championId"])]
             captions.append(str("{:,}").format(champ["championPoints"]))
         else:
@@ -88,7 +100,7 @@ try:
                 if champ_info["key"] == mastery_list[mastery][0]:
                     mastery_list[mastery].append(champions)
 
-        m1, m2, m3, m4, m5 = st.columns(5)
+        m1, m2, m3, m4, m5 = st.columns(MAX_MASTERY_SHOWCASE)
         mastery_col_lst = [m1, m2, m3, m4, m5]
 
         for num_mastery, mastery_col in enumerate(mastery_col_lst):
@@ -102,18 +114,14 @@ try:
     match_id_list = lol_watcher.match.matchlist_by_puuid(region=match_region, puuid=summoner["puuid"])
     summoner_spell = lol_watcher.data_dragon.summoner_spells(version="12.13.1")["data"]
 
-    total_wins = 0
-    total_losses = 0
-
-    number_of_matches = 0
-    for match_id in match_id_list:
-        if number_of_matches < max_matches:
+    for match_id_index ,match_id in enumerate(match_id_list):
+        if match_id_index < max_matches:
             game = lol_watcher.match.by_id(match_region, match_id)["info"]
             match = lol_watcher.match.by_id(match_region, match_id)["info"]["participants"]
-            with st.expander(str(number_of_matches + 1)):
+            with st.expander(str(match_id_index + 1)):
                 with st.container():
-                    mins = game["gameDuration"] // 60
-                    secs = game["gameDuration"] % 60
+                    mins = game["gameDuration"] // MINUTE
+                    secs = game["gameDuration"] % MINUTE
                     m0, m1, m2, m3, m4, m5 = st.columns([0.4, 0.1, 0.4, 0.1, 0.65, 0.5])
 
                     for count, match_player_data in enumerate(match):
@@ -127,7 +135,6 @@ try:
                             deaths = match_player_data["deaths"]
                             assists = match_player_data["assists"]
                             cs = match_player_data["totalMinionsKilled"]
-
                             if match_player_data["firstBloodKill"]:
                                 firstBlood = True
                             items = [match_player_data["item0"], match_player_data["item1"], match_player_data["item2"],
@@ -139,21 +146,21 @@ try:
                             if match_player_data["gameEndedInEarlySurrender"] or match_player_data["gameEndedInSurrender"]:
                                 surrender = True
 
-                        if count < 5:
+                        image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{}.png" \
+                            .format(match_player_data["championName"])
+                        participant = match_player_data["summonerName"] + " - lv" + str(match_player_data["champLevel"])
+
+                        if count < MAX_TEAM_MEM:
                             with m1:
-                                image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{}.png"\
-                                    .format(match_player_data["championName"])
-                                st.image(image, width=40)
+                                st.image(image, width=GAME_CHAMP_IMG_WIDTH)
                             with m2:
-                                st.write(match_player_data["summonerName"] + " - lv" + str(match_player_data["champLevel"]))
+                                st.write(participant)
                                 st.write("")
                         else:
                             with m3:
-                                image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{}.png".format(
-                                    match_player_data["championName"])
-                                st.image(image, width=40)
+                                st.image(image, width=GAME_CHAMP_IMG_WIDTH)
                             with m4:
-                                st.write(match_player_data["summonerName"] + " - lv" + str(match_player_data["champLevel"]))
+                                st.write(participant)
                                 st.write("")
                     with m5:
                         st.subheader("Game Stats")
@@ -180,15 +187,13 @@ try:
                     spacing_col_front, item_build_text, i1, i2, i3, i4, i5, i6, sum1_col, sum2_col = \
                         st.columns([0.075, 0.05, 0.02, 0.02, 0.02, 0.02, 0.02, 0.04, 0.02, 0.25])
                     item_col_lst = [i1, i2, i3, i4, i5, i6]
-                    index = 0
                     with item_build_text:
                         st.text("Items Built: ")
-                    for item_col in item_col_lst:
+                    for col_index, item_col in enumerate(item_col_lst):
                         for count, item in enumerate(items):
-                            if index == count:
+                            if col_index == count:
                                 image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/item/{}.png".format(item)
-                                item_col.image(image, width=30)
-                        index += 1
+                                item_col.image(image, width=GAME_ITEM_SUM_WIDTH)
 
                     for name, match_player_data in summoner_spell.items():
                         if match_player_data["key"] == summoner1:
@@ -198,11 +203,10 @@ try:
 
                     with sum1_col:
                         image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/spell/{}.png".format(summoner1)
-                        sum1_col.image(image, width=30)
+                        sum1_col.image(image, width=GAME_ITEM_SUM_WIDTH)
                     with sum2_col:
                         image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/spell/{}.png".format(summoner2)
-                        sum2_col.image(image, width=30)
-        number_of_matches += 1
+                        sum2_col.image(image, width=GAME_ITEM_SUM_WIDTH)
 
     if total_wins + total_losses != 0:
         win_rate = math.floor((total_wins / (total_wins + total_losses)) * 100)
