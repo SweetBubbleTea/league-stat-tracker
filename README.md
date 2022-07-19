@@ -13,7 +13,7 @@ The web application provides data on champion mastery, win rate, itemization, cr
 
 League Stat Tracker is a personal project that is not associated with Riot Games nor League of Legends in any shape or form.
 
-League Stat Tracker is usable without having to obtain your own personal API key from Riot Games; however,
+League Stat Tracker is functional without having to obtain your own personal API key from Riot Games; however,
 Development API keys from Riot Games has a shelf life of 24 hours. This would mean that the in order to use the web application, 
 a personal API key from Riot Games MAY be needed. 
 
