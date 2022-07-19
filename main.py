@@ -214,6 +214,12 @@ try:
         st.write("GitHub: https://github.com/SweetBubbleTea/league-stat-tracker")
         st.write("Used to track different stats from League of Legends")
 
+    with st.sidebar.expander("Disclaimer"):
+        st.write("League Stat Tracker is a personal project that is not associated with Riot Games nor League of Legends in any shape or form.")
+        st.write("League Stat Tracker is usable without having to obtain your own personal API key from Riot Games; however, "
+                 "Development API keys from Riot Games has a shelf life of 24 hours. "
+                 "This would mean that the in order to use the web application, a personal API key from Riot Games MAY be needed.")
+
 except ApiError as err:
     if err.response.status_code == 429:
         st.error("Should retry in {} seconds due several requests".format(err.response.headers["Retry-After"]))
