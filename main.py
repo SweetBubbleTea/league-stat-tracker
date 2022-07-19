@@ -7,6 +7,21 @@ from urllib.request import urlopen
 from riotwatcher import LolWatcher, ApiError
 import streamlit as st
 
+win = False
+kills = 0
+deaths = 0
+assists = 0
+cs = 0
+firstBlood = False
+items = []
+summoner1 = ""
+summoner2 = ""
+role = ""
+mode = ""
+surrender = False
+mastery_list = {}
+captions = []
+
 st.set_page_config(
     page_title="League Stats",
     page_icon="🧊",
@@ -25,8 +40,8 @@ st.empty().write("---")
 st.sidebar.header("Settings")
 personal_key = st.sidebar.text_input("Personal API Key", placeholder="Optional")
 
-if personal_key != "":
-    lol_watcher = LolWatcher(personal_key)
+if personal_key:
+    lol_watcher = LolWatcher(str(personal_key))
 else:
     lol_watcher = LolWatcher(getKey())
 
@@ -41,8 +56,6 @@ champion_asset_json = "http://ddragon.leagueoflegends.com/cdn/12.13.1/data/en_US
 match_region = matchIdentifier(region)
 region = regionIdentifier(region)
 icon_ctnr, stats_ctnr, rp = st.columns([0.5, 2, 1], gap="small")
-mastery_list = {}
-captions = []
 
 try:
     summoner = lol_watcher.summoner.by_name(region, summoner_name)
@@ -77,14 +90,13 @@ try:
 
         m1, m2, m3, m4, m5 = st.columns(5)
         mastery_col_lst = [m1, m2, m3, m4, m5]
-        index = 0
-        for mastery_col in mastery_col_lst:
+
+        for num_mastery, mastery_col in enumerate(mastery_col_lst):
             for x in mastery_list:
-                if index == x:
+                if num_mastery == x:
                     image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{}.png".format(
                         mastery_list[x][1])
-                    mastery_col.image(image, caption=captions[index] + " pts")
-            index += 1
+                    mastery_col.image(image, caption=captions[num_mastery] + " pts")
 
     st.subheader("Most Recent Matches")
     match_id_list = lol_watcher.match.matchlist_by_puuid(region=match_region, puuid=summoner["puuid"])
@@ -100,20 +112,8 @@ try:
             match = lol_watcher.match.by_id(match_region, match_id)["info"]["participants"]
             with st.expander(str(number_of_matches + 1)):
                 with st.container():
-                    win = False
-                    kills = 0
-                    deaths = 0
-                    assists = 0
-                    cs = 0
-                    firstBlood = False
                     mins = game["gameDuration"] // 60
                     secs = game["gameDuration"] % 60
-                    items = []
-                    summoner1 = ""
-                    summoner2 = ""
-                    role = ""
-                    mode = ""
-                    surrender = False
                     m0, m1, m2, m3, m4, m5 = st.columns([0.4, 0.1, 0.4, 0.1, 0.65, 0.5])
 
                     for count, match_player_data in enumerate(match):
@@ -130,8 +130,8 @@ try:
 
                             if match_player_data["firstBloodKill"]:
                                 firstBlood = True
-                            items = [match_player_data["item0"], match_player_data["item1"], match_player_data["item2"], match_player_data["item3"], match_player_data["item4"],
-                                     match_player_data["item5"]]
+                            items = [match_player_data["item0"], match_player_data["item1"], match_player_data["item2"],
+                                     match_player_data["item3"], match_player_data["item4"], match_player_data["item5"]]
                             summoner1 = str(match_player_data["summoner1Id"])
                             summoner2 = str(match_player_data["summoner2Id"])
                             role = match_player_data["teamPosition"]
@@ -205,7 +205,8 @@ try:
         number_of_matches += 1
 
     if total_wins + total_losses != 0:
-        st.sidebar.metric(label="Win Rate for Last " + str(int(max_matches)) + " matches", value=str(math.floor((total_wins / (total_wins + total_losses)) * 100)) + "%")
+        win_rate = math.floor((total_wins / (total_wins + total_losses)) * 100)
+        st.sidebar.metric(label="Win Rate for Last " + str(int(max_matches)) + " matches", value=str(win_rate) + "%")
 except ApiError as err:
     if err.response.status_code == 429:
         st.error("Should retry in {} seconds due several requests".format(err.response.headers["Retry-After"]))
