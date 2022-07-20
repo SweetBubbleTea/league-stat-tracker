@@ -1,4 +1,4 @@
-def regionIdentifier(region):
+def leagueRegionIdentifier(region):
     match region:
         case "North America":
             return "na1"
@@ -33,5 +33,22 @@ def matchIdentifier(region):
             return "Sea"
         case ("Korea"|"Japan"):
             return "Asia"
+
+def valorantRegionIdentifier(region):
+    match region:
+        case "Asia Pacific":
+            return "ap"
+        case "Brazil":
+            return "br"
+        case "Europe":
+            return "eu"
+        case "Korea":
+            return "kr"
+        case "Latam":
+            return "latam"
+        case "North America":
+            return "na"
+
+
 
 
