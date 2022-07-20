@@ -6,7 +6,7 @@
 ![website](https://img.shields.io/website?url=https%3A%2F%2Fleague-stat-tracker.herokuapp.com)
 ![last commit](https://img.shields.io/github/last-commit/sweetbubbletea/league-stat-tracker)
 
-A simple web application that is designed to provide statistical data for each game that was previously played in League of Legends. 
+A web application that is designed to provide statistical data for each game that was previously played in League of Legends. 
 The web application provides data on champion mastery, win rate, itemization, creep score, KDA, and many more. 
 
 ## Disclaimers
@@ -22,7 +22,7 @@ a personal API key from Riot Games MAY be needed.
 - [RiotWatcher](https://github.com/pseudonym117/Riot-Watcher) - Wrapper for Riot Games League of Legends API
 - [Heroku](https://www.heroku.com/) - PaaS that enables full deployment of applications  
 - [Streamlit](https://streamlit.io/) - Framework for Data Science and Machine Learning web applications
-
+- [Valorant.py](https://github.com/frissyn/valorant.py) - Wrapper for endpoints within the Riot Games API for Valorant
 
 ## Author
 
