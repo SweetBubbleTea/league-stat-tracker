@@ -257,14 +257,14 @@ with valorant_tab:
         with rr:
             st.markdown("#### **Rating**")
 
-        lb = val_client.get_leaderboard(size=15)
-        for p in lb.players:
+        leaderboard = val_client.get_leaderboard(size=15)
+        for player in leaderboard.players:
             with rank:
-                st.text(str(p.leaderboardRank))
+                st.text(str(player.leaderboardRank))
             with name:
-                st.text(str(p.gameName))
+                st.text(str(player.gameName))
             with rr:
-                st.text(str(p.rankedRating))
+                st.text(str(player.rankedRating))
 
 
 st.sidebar.title("")
