@@ -1,3 +1,4 @@
 streamlit==1.11.0
 riotwatcher==3.2.3
 python-dotenv~=0.20.0
+valorant==1.0.4
