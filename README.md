@@ -24,6 +24,11 @@ a personal API key from Riot Games MAY be needed.
 - [Heroku](https://www.heroku.com/) - PaaS that enables full deployment of applications  
 - [Streamlit](https://streamlit.io/) - Framework for Data Science and Machine Learning web applications
 - [Valorant.py](https://github.com/frissyn/valorant.py) - Wrapper for endpoints within the Riot Games API for Valorant
+- [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) - Python library used for parsing and scrapping HTML and XML documents
+
+## Acknowledgements 
+
+- [Liquidpedia](https://liquipedia.net/valorant/Main_Page) - Used to scrap Esport organization
 
 ## Author
 
