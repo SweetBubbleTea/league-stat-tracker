@@ -1,11 +1,12 @@
+import re
 import json
 import math
-
 import requests
 import valorant
 
 from config import *
 from utilities import *
+from bs4 import BeautifulSoup
 from valorant.query import exp
 from urllib.request import urlopen
 from riotwatcher import LolWatcher, ApiError
@@ -247,119 +248,153 @@ with valorant_tab:
     st.write("")
     val_region = valorantRegionIdentifier(val_region)
 
-    if personal_key:
-        val_client = valorant.Client(str(personal_key), region=val_region)
-    else:
-        val_client = valorant.Client(getKey(), region=val_region)
-
-    icon_ctnr, info_ctnr, rp1 = st.columns([1, 4.5, 1])
-
-    with icon_ctnr:
-        image = "assets/rsz_1logo.png"
-        st.image(image)
-    with info_ctnr:
-        st.subheader("Valorant")
-        current_act = val_client.get_acts()
-        last_act = list(current_act)[-1].name.lower().capitalize()
-        last_act_query = last_act.split()
-        if last_act_query[0] == "Episode":
-            st.text(last_act)
-            st.text("Act 1")
+    try:
+        if personal_key:
+            val_client = valorant.Client(str(personal_key), region=val_region)
         else:
-            episode = list(current_act)[-1 - int(last_act_query[1])].name.lower().capitalize()
-            st.text(episode)
-            st.text(last_act)
-        st.text("Patch " + val_client.get_content().version[8:])
+            val_client = valorant.Client(getKey(), region=val_region)
 
-    st.write("")
-    with st.expander("Leaderboard"):
+        icon_ctnr, info_ctnr, rp1 = st.columns([1, 4.5, 1])
+
+        with icon_ctnr:
+            image = "assets/rsz_1logo.png"
+            st.image(image)
+        with info_ctnr:
+            st.subheader("Valorant")
+            current_act = val_client.get_acts()
+            last_act = list(current_act)[-1].name.lower().capitalize()
+            last_act_query = last_act.split()
+            if last_act_query[0] == "Episode":
+                st.text(last_act)
+                st.text("Act 1")
+            else:
+                episode = list(current_act)[-1 - int(last_act_query[1])].name.lower().capitalize()
+                st.text(episode)
+                st.text(last_act)
+            st.text("Patch " + val_client.get_content().version[8:])
+
         st.write("")
+        with st.expander("Leaderboard"):
+            st.write("")
 
-        spacing_front, rank, name, rr = st.columns([.5, .8, 1, .8])
+            spacing_front, rank, name, rr = st.columns([.5, .8, 1, .8])
 
-        with rank:
-            st.markdown("#### **Rank**")
-        with name:
-            st.markdown("#### **Name**")
-        with rr:
-            st.markdown("#### **Rating**")
+            with rank:
+                st.markdown("#### **Rank**")
+            with name:
+                st.markdown("#### **Name**")
+            with rr:
+                st.markdown("#### **Rating**")
 
-        player_num = st.number_input("Number of Players", min_value=1, max_value=20, step=1, value=10)
-        try:
-            leaderboard = val_client.get_leaderboard(size=player_num)
-            for player in leaderboard.players:
-                with rank:
-                    st.text(str(player.leaderboardRank))
-                with name:
-                    st.text(str(player.gameName))
-                with rr:
-                    st.text(str(player.rankedRating))
-        except requests.exceptions.HTTPError:
-            pass
-
-    with st.expander("Radiant Query"):
-        st.write("")
-        st.info("Obtains the queried player(s) in Radiant")
-
-        radiant_query = st.text_input("Esports org or player name")
-        if radiant_query != "":
-            for pg in range(0, 5):
-                leaderboard = val_client.get_leaderboard(size=LEADERBOARD_SIZE, page=pg)
-                players = leaderboard.players.get_all(gameName=exp('.startswith', radiant_query))
-                for name in players:
-                    st.write(name.gameName)
-
-    with st.expander("Skins"):
-        st.write("")
-
-        st.info("Obtains every skin from the queried skin bundle")
-        skin_query = st.text_input("Skin bundle name").lower().capitalize()
-
-        if skin_query != "":
-            skin_query_alias = skin_query.split()[0]
-            skin = val_client.get_skins().get_all(name=exp('.startswith', skin_query_alias))
+            player_num = st.number_input("Number of Players", min_value=1, max_value=20, step=1, value=10)
             try:
-                st.image("assets/Bundles/{}.png".format(skin_query), width=400)
-            except FileNotFoundError:
+                leaderboard = val_client.get_leaderboard(size=player_num)
+                for player in leaderboard.players:
+                    with rank:
+                        st.text(str(player.leaderboardRank))
+                    with name:
+                        st.text(str(player.gameName))
+                    with rr:
+                        st.text(str(player.rankedRating))
+            except requests.exceptions.HTTPError:
                 pass
 
-            match skin_query_alias:
-                case "Sarmad":
-                    st.write("Blade of Serket")
-                case "Prelude":
-                    st.write("Blade of Chaos")
-                case "Undercity":
-                    st.write("Hack")
-                case "Tigris":
-                    st.write("Hu Else")
-                case "Protocol":
-                    st.write("Personal Administrative Melee Unit")
-                case "Nunca":
-                    st.write("Catrina")
-                case "Rgx":
-                    skin = val_client.get_skins().get_all(name=exp('.startswith', "RGX"))
-                case "Spectrum":
-                    st.write("Waveform")
-                case "Sentinel":
-                    st.write("Relic of the Sentinel")
-                case "Ruination":
-                    st.write("Broken Blade of the Ruined King")
-                case "Origin":
-                    st.write("Crescent Blade")
-                case "Tethered":
-                    st.write("Prosperity")
-                case "Forsaken":
-                    st.write("Ritual Blade")
-                case "Valorant":
-                    skin = val_client.get_skins().get_all(name=exp('.startswith', "VALORANT"))
-                case "Blastx":
-                    skin = val_client.get_skins().get_all(name=exp('.startswith', "BlastX"))
-                case "Gun":
-                    skin = val_client.get_skins().get_all(name=exp('.startswith', "Gravitational Uranium Neuroblaster"))
-                case _:
+        with st.expander("Radiant Query"):
+            st.write("")
+            st.info("Obtains the queried player(s) in Radiant")
+
+            radiant_query = st.text_input("Esports org or player name")
+            if radiant_query != "":
+                for pg in range(0, 5):
+                    leaderboard = val_client.get_leaderboard(size=LEADERBOARD_SIZE, page=pg)
+                    players = leaderboard.players.get_all(gameName=exp('.startswith', radiant_query))
+                    for name in players:
+                        st.write(name.gameName)
+
+        with st.expander("Skins"):
+            st.write("")
+
+            st.info("Obtains every skin from the queried skin bundle")
+            skin_query = st.text_input("Skin bundle name").lower().capitalize()
+
+            if skin_query != "":
+                skin_query_alias = skin_query.split()[0]
+                skin = val_client.get_skins().get_all(name=exp('.startswith', skin_query_alias))
+                try:
+                    st.image("assets/Bundles/{}.png".format(skin_query), width=400)
+                except FileNotFoundError:
                     pass
-            for name in skin:
-                st.write(name.name)
+
+                match skin_query_alias:
+                    case "Sarmad":
+                        st.write("Blade of Serket")
+                    case "Prelude":
+                        st.write("Blade of Chaos")
+                    case "Undercity":
+                        st.write("Hack")
+                    case "Tigris":
+                        st.write("Hu Else")
+                    case "Protocol":
+                        st.write("Personal Administrative Melee Unit")
+                    case "Nunca":
+                        st.write("Catrina")
+                    case "Rgx":
+                        skin = val_client.get_skins().get_all(name=exp('.startswith', "RGX"))
+                    case "Spectrum":
+                        st.write("Waveform")
+                    case "Sentinel":
+                        st.write("Relic of the Sentinel")
+                    case "Ruination":
+                        st.write("Broken Blade of the Ruined King")
+                    case "Origin":
+                        st.write("Crescent Blade")
+                    case "Tethered":
+                        st.write("Prosperity")
+                    case "Forsaken":
+                        st.write("Ritual Blade")
+                    case "Valorant":
+                        skin = val_client.get_skins().get_all(name=exp('.startswith', "VALORANT"))
+                    case "Blastx":
+                        skin = val_client.get_skins().get_all(name=exp('.startswith', "BlastX"))
+                    case "Gun":
+                        skin = val_client.get_skins().get_all(
+                            name=exp('.startswith', "Gravitational Uranium Neuroblaster"))
+                    case _:
+                        pass
+                for name in skin:
+                    st.write(name.name)
+
+        with st.expander("Something for now"):
+
+            st.info("Obtain information about the queried Esports organization.")
+
+            org = st.text_input("Esports Organization")
+
+            if orgIdentifier(org) is not None:
+                org = orgIdentifier(org)
+
+            st.write(org)
+            if org != "":
+                url = "https://liquipedia.net/valorant/{}".format(org)
+                result = requests.get(url)
+                doc = BeautifulSoup(result.text, "html.parser")
+
+                table = doc.find(class_="wikitable wikitable-striped roster-card")
+                try:
+                    roster = table.find_all(href=re.compile("valorant/"))
+                    for member in roster:
+                        name = member.text
+
+                        if name != "":
+                            st.write(name)
+                except AttributeError:
+                    st.error("Provide the EXACT spelling of the org name for best results. Not all common aliases would be catched.")
+
+
+    except requests.exceptions.HTTPError as err:
+            if err.response.status_code == 403:
+                st.error("Invalid or expired API key")
+
 
 
 st.sidebar.title("")
