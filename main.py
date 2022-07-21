@@ -6,17 +6,22 @@ import valorant
 
 from config import *
 from utilities import *
+from valorant.query import exp
 from urllib.request import urlopen
 from riotwatcher import LolWatcher, ApiError
 import streamlit as st
 
+# League constants
 GAME_CHAMP_IMG_WIDTH = 40
 GAME_ITEM_SUM_WIDTH = 30
 MAX_TEAM_MEM = 5
 MAX_MASTERY_SHOWCASE = 5
 MINUTE = 60
-MIN_NUM_MATCHES_= 1
+MIN_NUM_MATCHES = 1
 MAX_NUM_MATCHES = 15
+
+# Valorant constants
+LEADERBOARD_SIZE = 100
 
 kills = 0
 deaths = 0
@@ -66,13 +71,12 @@ with st.sidebar.expander("League of Legends"):
                               ("North America", "Europe West", "Europe Nordic & East", "Oceania", "Korea", "Japan",
                                "Brazil", "LAS", "LAN", "Russia", "Turkey"))
 
-    max_matches = st.number_input("Number of Matches to Display", min_value=MIN_NUM_MATCHES_, max_value=MAX_NUM_MATCHES, step=1)
+    max_matches = st.number_input("Number of Matches to Display", min_value=MIN_NUM_MATCHES, max_value=MAX_NUM_MATCHES, step=1)
     st.write("")
 
 with st.sidebar.expander("Valorant"):
     st.write("---")
-    val_region = st.selectbox("Region",
-                          ("North America", "Asia Pacific", "Brazil", "Europe", "Korea", "Latam"))
+    val_region = st.selectbox("Region", ("North America", "Asia Pacific", "Brazil", "Europe", "Korea", "Latam"))
     st.write("")
 
 league_tab, valorant_tab = st.tabs(["League", "Valorant"])
@@ -130,7 +134,7 @@ with league_tab:
         match_id_list = lol_watcher.match.matchlist_by_puuid(region=lol_match_region, puuid=summoner["puuid"])
         summoner_spell = lol_watcher.data_dragon.summoner_spells(version="12.13.1")["data"]
 
-        for match_id_index ,match_id in enumerate(match_id_list):
+        for match_id_index, match_id in enumerate(match_id_list):
             if match_id_index < max_matches:
                 game = lol_watcher.match.by_id(lol_match_region, match_id)["info"]
                 match = lol_watcher.match.by_id(lol_match_region, match_id)["info"]["participants"]
@@ -141,7 +145,7 @@ with league_tab:
                         m0, m1, m2, m3, m4, m5 = st.columns([0.4, 0.1, 0.4, 0.1, 0.65, 0.5])
 
                         for count, match_player_data in enumerate(match):
-                            if match_player_data["summonerName"] == summoner_name:
+                            if match_player_data["summonerName"].lower() == summoner_name.lower():
                                 if match_player_data["win"]:
                                     win = True
                                     total_wins += 1
@@ -208,8 +212,9 @@ with league_tab:
                         for col_index, item_col in enumerate(item_col_lst):
                             for count, item in enumerate(items):
                                 if col_index == count:
-                                    image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/item/{}.png".format(item)
-                                    item_col.image(image, width=GAME_ITEM_SUM_WIDTH)
+                                    if item != 0:
+                                        image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/item/{}.png".format(item)
+                                        item_col.image(image, width=GAME_ITEM_SUM_WIDTH)
 
                         for name, match_player_data in summoner_spell.items():
                             if match_player_data["key"] == summoner1:
@@ -226,7 +231,8 @@ with league_tab:
 
         if total_wins + total_losses != 0:
             win_rate = math.floor((total_wins / (total_wins + total_losses)) * 100)
-            st.sidebar.metric(label="Win Rate for Last " + str(int(max_matches)) + " matches", value=str(win_rate) + "%")
+            with rp:
+                st.metric(label="Win Rate for Last " + str(int(max_matches)) + " matches", value=str(win_rate) + "%")
     except ApiError as err:
         if err.response.status_code == 429:
             st.error("Should retry in {} seconds due several requests".format(err.response.headers["Retry-After"]))
@@ -238,6 +244,7 @@ with league_tab:
             raise
 
 with valorant_tab:
+    st.write("")
     val_region = valorantRegionIdentifier(val_region)
 
     if personal_key:
@@ -245,6 +252,26 @@ with valorant_tab:
     else:
         val_client = valorant.Client(getKey(), region=val_region)
 
+    icon_ctnr, info_ctnr, rp1 = st.columns([1, 4.5, 1])
+
+    with icon_ctnr:
+        image = "assets/rsz_1logo.png"
+        st.image(image)
+    with info_ctnr:
+        st.subheader("Valorant")
+        current_act = val_client.get_acts()
+        last_act = list(current_act)[-1].name.lower().capitalize()
+        last_act_query = last_act.split()
+        if last_act_query[0] == "Episode":
+            st.text(last_act)
+            st.text("Act 1")
+        else:
+            episode = list(current_act)[-1 - int(last_act_query[1])].name.lower().capitalize()
+            st.text(episode)
+            st.text(last_act)
+        st.text("Patch " + val_client.get_content().version[8:])
+
+    st.write("")
     with st.expander("Leaderboard"):
         st.write("")
 
@@ -257,14 +284,82 @@ with valorant_tab:
         with rr:
             st.markdown("#### **Rating**")
 
-        leaderboard = val_client.get_leaderboard(size=15)
-        for player in leaderboard.players:
-            with rank:
-                st.text(str(player.leaderboardRank))
-            with name:
-                st.text(str(player.gameName))
-            with rr:
-                st.text(str(player.rankedRating))
+        player_num = st.number_input("Number of Players", min_value=1, max_value=20, step=1, value=10)
+        try:
+            leaderboard = val_client.get_leaderboard(size=player_num)
+            for player in leaderboard.players:
+                with rank:
+                    st.text(str(player.leaderboardRank))
+                with name:
+                    st.text(str(player.gameName))
+                with rr:
+                    st.text(str(player.rankedRating))
+        except requests.exceptions.HTTPError:
+            pass
+
+    with st.expander("Radiant Query"):
+        st.write("")
+        st.info("Obtains the queried player(s) in Radiant")
+
+        radiant_query = st.text_input("Esports org or player name")
+        if radiant_query != "":
+            for pg in range(0, 5):
+                leaderboard = val_client.get_leaderboard(size=LEADERBOARD_SIZE, page=pg)
+                players = leaderboard.players.get_all(gameName=exp('.startswith', radiant_query))
+                for name in players:
+                    st.write(name.gameName)
+
+    with st.expander("Skins"):
+        st.write("")
+
+        st.info("Obtains every skin from the queried skin bundle")
+        skin_query = st.text_input("Skin bundle name").lower().capitalize()
+
+        if skin_query != "":
+            skin_query_alias = skin_query.split()[0]
+            skin = val_client.get_skins().get_all(name=exp('.startswith', skin_query_alias))
+            try:
+                st.image("assets/Bundles/{}.png".format(skin_query), width=400)
+            except FileNotFoundError:
+                pass
+
+            match skin_query_alias:
+                case "Sarmad":
+                    st.write("Blade of Serket")
+                case "Prelude":
+                    st.write("Blade of Chaos")
+                case "Undercity":
+                    st.write("Hack")
+                case "Tigris":
+                    st.write("Hu Else")
+                case "Protocol":
+                    st.write("Personal Administrative Melee Unit")
+                case "Nunca":
+                    st.write("Catrina")
+                case "Rgx":
+                    skin = val_client.get_skins().get_all(name=exp('.startswith', "RGX"))
+                case "Spectrum":
+                    st.write("Waveform")
+                case "Sentinel":
+                    st.write("Relic of the Sentinel")
+                case "Ruination":
+                    st.write("Broken Blade of the Ruined King")
+                case "Origin":
+                    st.write("Crescent Blade")
+                case "Tethered":
+                    st.write("Prosperity")
+                case "Forsaken":
+                    st.write("Ritual Blade")
+                case "Valorant":
+                    skin = val_client.get_skins().get_all(name=exp('.startswith', "VALORANT"))
+                case "Blastx":
+                    skin = val_client.get_skins().get_all(name=exp('.startswith', "BlastX"))
+                case "Gun":
+                    skin = val_client.get_skins().get_all(name=exp('.startswith', "Gravitational Uranium Neuroblaster"))
+                case _:
+                    pass
+            for name in skin:
+                st.write(name.name)
 
 
 st.sidebar.title("")
@@ -278,5 +373,5 @@ with st.sidebar.expander("About this app"):
 with st.sidebar.expander("Disclaimer"):
     st.write("League Stat Tracker is a personal project that is **not** associated with Riot Games nor League of Legends in any shape or form.")
     st.write("League Stat Tracker is usable without having to obtain your own personal API key from Riot Games; however, "
-             "Development API keys from Riot Games has a shelf life of 24 hours. "
-             "This would mean that the in order to use the web application, a personal API key from Riot Games **MAY** be needed.")
+             "Development API keys from Riot Games has a shelf life of 24 hours. This would mean that the in order to "
+             "use the web application, a personal API key from Riot Games **MAY** be needed.")
