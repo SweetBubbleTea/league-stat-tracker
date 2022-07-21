@@ -6,8 +6,9 @@
 ![website](https://img.shields.io/website?url=https%3A%2F%2Fleague-stat-tracker.herokuapp.com)
 ![last commit](https://img.shields.io/github/last-commit/sweetbubbletea/league-stat-tracker)
 
-A web application that is designed to provide statistical data for each game that was previously played in League of Legends. 
-The web application provides data on champion mastery, win rate, itemization, creep score, KDA, and many more. 
+A web application that is designed to provide statistical data for both League of Legends and Riot Games. 
+For League, it provides data on champion mastery, win rate, itemization, creep score, KDA, and many more. For Valorant, 
+it supplies a leaderboard, and many more. 
 
 ## Disclaimers
 
