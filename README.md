@@ -28,7 +28,7 @@ a personal API key from Riot Games MAY be needed.
 
 ## Acknowledgements 
 
-- [Liquidpedia](https://liquipedia.net/valorant/Main_Page) - Used to scrap Esport organization
+- [Liquidpedia](https://liquipedia.net/valorant/Main_Page) - Used to scrap data on Esport organizations
 
 ## Author
 
