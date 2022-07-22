@@ -257,7 +257,7 @@ with valorant_tab:
         icon_ctnr, info_ctnr, rp1 = st.columns([1, 4.5, 1])
 
         with icon_ctnr:
-            image = "assets/rsz_1logo.png"
+            image = "assets/logo/valorant_logo.png"
             st.image(image)
         with info_ctnr:
             st.subheader("Valorant")
@@ -321,7 +321,7 @@ with valorant_tab:
                 skin_query_alias = skin_query.split()[0]
                 skin = val_client.get_skins().get_all(name=exp('.startswith', skin_query_alias))
                 try:
-                    st.image("assets/Bundles/{}.png".format(skin_query), width=400)
+                    st.image("assets/bundles/{}.png".format(skin_query), width=400)
                 except FileNotFoundError:
                     pass
 
@@ -364,32 +364,62 @@ with valorant_tab:
                 for name in skin:
                     st.write(name.name)
 
-        with st.expander("Something for now"):
+        with st.expander("Esports Org"):
 
             st.info("Obtain information about the queried Esports organization.")
 
             org = st.text_input("Esports Organization")
+            st.write("")
+            spacing, q1, q2, q3 = st.columns([.5,1,.6,1.5])
 
             if orgIdentifier(org) is not None:
                 org = orgIdentifier(org)
 
-            st.write(org)
             if org != "":
                 url = "https://liquipedia.net/valorant/{}".format(org)
                 result = requests.get(url)
                 doc = BeautifulSoup(result.text, "html.parser")
 
                 table = doc.find(class_="wikitable wikitable-striped roster-card")
+                info_card = doc.find(class_="fo-nttax-infobox wiki-bordercolor-light")
                 try:
                     roster = table.find_all(href=re.compile("valorant/"))
-                    for member in roster:
-                        name = member.text
+                    with q2:
+                        for member in roster:
+                            name = member.text
+                            if name != "":
+                                st.write(name)
 
-                        if name != "":
-                            st.write(name)
+                    with q1:
+                        try:
+                            icon = "assets/esports/{}.png".format(org)
+                            st.image(icon, width=200)
+                        except FileNotFoundError:
+                            st.image("assets/esports/basic/player silhouette.jpeg", width=200)
+
+                    with q3:
+                        total_winnings = " N/A"
+                        location = " N/A"
+                        ign = " N/A"
+                        region = " N/A"
+                        div = info_card.find_all(class_="infobox-cell-2")
+                        for index, member in enumerate(div):
+                            name = member.text
+                            if name == "Approx. Total Winnings:":
+                                total_winnings = div[index+1].text
+                            elif name == "Location:":
+                                location = div[index+1].text
+                            elif name == "In-Game Leader:":
+                                ign = div[index+1].text
+                            elif name == "Region:":
+                                region = div[index+1].text
+                        st.text("Location:" + location)
+                        st.text("Region:" + region)
+                        st.text("Total Winnings: " + total_winnings)
+                        st.text("IGN:" + ign)
                 except AttributeError:
                     st.error("Provide the EXACT spelling of the org name for best results. Not all common aliases would be catched.")
-
+                st.write("")
 
     except requests.exceptions.HTTPError as err:
             if err.response.status_code == 403:
