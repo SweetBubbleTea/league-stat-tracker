@@ -57,7 +57,7 @@ def orgIdentifier(org):
             return "c9"
         case "Tsm" | "Team Solo Mid" | "tsm":
             return "TSM"
-        case "Optic" | "Optic Gaming" | "optic":
+        case "Optic" | "Optic Gaming" | "optic" | "optic gaming":
             return "OpTic_Gaming"
         case "Loud" | "loud":
             return "LOUD"
@@ -85,7 +85,27 @@ def orgIdentifier(org):
             return "NYFU"
         case "Darkzero Esports" | "Darkzero":
             return "DarkZero Esports"
-        case "Geng" | "Gen.g" | "Geng Esports":
-            return "Gen.G Esports"
+        case "Geng" | "Gen.g" | "Geng Esports" | "geng":
+            return "Gen.G_Esports"
+        case "paper rex":
+            return "Paper Rex"
+        case "x10" | "X10":
+            return "X10_Esports"
+        case "xerxia":
+            return "XERXIA"
+        case "crazy raccoon":
+            return "Crazy_Raccoon"
+        case "supermassive blaze":
+            return "SuperMassive_Blaze"
+        case "nrg":
+            return "NRG"
+        case "team vikings":
+            return "Team_Vikings"
+        case "g2" | "G2":
+            return "G2_Esports"
+        case "counter logic gaming red" | "clg red":
+            return "Counter_Logic_Gaming_Red"
+        case "gambit" | "gambit esports":
+            return "Gambit Esports"
         case _:
             return None
