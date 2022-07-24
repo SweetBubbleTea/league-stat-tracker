@@ -58,7 +58,7 @@ def orgIdentifier(org):
         case "Tsm" | "Team Solo Mid" | "tsm":
             return "TSM"
         case "Optic" | "Optic Gaming" | "optic" | "optic gaming":
-            return "OpTic_Gaming"
+            return "OpTic Gaming"
         case "Loud" | "loud":
             return "LOUD"
         case "Guild" | "guild":
@@ -77,14 +77,10 @@ def orgIdentifier(org):
             return "100 Thieves"
         case "Zeta" | "Zeta Division":
             return "ZETA_DIVISION"
-        case "Faze" | "Faze clan" | "Faze Clan":
+        case "Faze" | "Faze clan" | "Faze Clan" | "faze clan" | "faze":
             return "FaZe Clan"
         case "Imt":
             return "Immortals"
-        case "Nyfu":
-            return "NYFU"
-        case "Darkzero Esports" | "Darkzero":
-            return "DarkZero Esports"
         case "Geng" | "Gen.g" | "Geng Esports" | "geng":
             return "Gen.G_Esports"
         case "paper rex":
@@ -107,5 +103,9 @@ def orgIdentifier(org):
             return "Counter_Logic_Gaming_Red"
         case "gambit" | "gambit esports":
             return "Gambit Esports"
+        case "edward gaming" | "edg":
+            return "EDward Gaming"
+        case "the guard":
+            return "The Guard"
         case _:
             return None
