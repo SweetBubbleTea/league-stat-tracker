@@ -87,6 +87,10 @@ with league_tab:
     champion_asset_json = "http://ddragon.leagueoflegends.com/cdn/12.13.1/data/en_US/champion.json"
     lol_match_region = matchIdentifier(lol_region)
     lol_region = leagueRegionIdentifier(lol_region)
+
+    with st.expander("Champion Win Rate"):
+        champion = st.text_input("Champion")
+
     icon_ctnr, stats_ctnr, rp = st.columns([0.5, 2, 1], gap="small")
 
     try:
@@ -370,7 +374,7 @@ with valorant_tab:
 
             org = st.text_input("Esports Organization")
             st.write("")
-            spacing, q1, q2, q3 = st.columns([.5,1,.6,1.5])
+            spacing, q1, q2, q3 = st.columns([0.5, 1, 0.6, 1.5])
 
             if orgIdentifier(org) is not None:
                 org = orgIdentifier(org)
@@ -378,10 +382,11 @@ with valorant_tab:
             if org != "":
                 url = "https://liquipedia.net/valorant/{}".format(org)
                 result = requests.get(url)
-                doc = BeautifulSoup(result.text, "html.parser")
+                doc = BeautifulSoup(result.text, "lxml")
 
                 table = doc.find(class_="wikitable wikitable-striped roster-card")
                 info_card = doc.find(class_="fo-nttax-infobox wiki-bordercolor-light")
+
                 try:
                     roster = table.find_all(href=re.compile("valorant/"))
                     with q2:
@@ -399,33 +404,58 @@ with valorant_tab:
 
                     with q3:
                         total_winnings = " N/A"
-                        location = " N/A"
+                        esports_location = " N/A"
                         ign = " N/A"
-                        region = " N/A"
+                        esports_region = " N/A"
+                        query_region = ""
                         div = info_card.find_all(class_="infobox-cell-2")
                         for index, member in enumerate(div):
                             name = member.text
                             if name == "Approx. Total Winnings:":
                                 total_winnings = div[index+1].text
                             elif name == "Location:":
-                                location = div[index+1].text
+                                esports_location = div[index + 1].text
                             elif name == "In-Game Leader:":
                                 ign = div[index+1].text
                             elif name == "Region:":
-                                region = div[index+1].text
-                        st.text("Location:" + location)
-                        st.text("Region:" + region)
+                                esports_region = div[index + 1].text.lower().strip()
+
+                        match esports_region:
+                            case "middle east":
+                                query_region = "mena"
+                            case "north america":
+                                query_region = "north-america"
+                            case "asia pacific":
+                                query_region = "asia-pacific"
+                            case _:
+                                query_region = esports_region
+
+                        vlr_url = "https://www.vlr.gg/rankings/{}".format(query_region)
+                        vlr_result = requests.get(vlr_url)
+                        vlr_doc = BeautifulSoup(vlr_result.text, "lxml")
+
+                        mod_scroll = vlr_doc.find("div", {"class": "mod-scroll"})
+                        ranking_list = mod_scroll.find_all(class_="rank-item wf-card fc-flex")
+
+                        for index, element in enumerate(ranking_list):
+                            if index < 10:
+                                if str(element.find("div", {"class": "ge-text"}).next.text).strip() == org:
+                                    esport_rank = element.find(class_="rank-item-rank-num").text.strip()
+                                    st.text("Rank: " + esport_rank)
+                                    break
+
+                        st.text("Location:" + esports_location)
+                        st.text("Region: " + esports_region.title())
                         st.text("Total Winnings: " + total_winnings)
                         st.text("IGN:" + ign)
                 except AttributeError:
-                    st.error("Provide the EXACT spelling of the org name for best results. Not all common aliases would be catched.")
+                    st.error("Provide the EXACT spelling of the org name for best results. "
+                             "Not all common aliases will be catched.")
                 st.write("")
 
     except requests.exceptions.HTTPError as err:
-            if err.response.status_code == 403:
-                st.error("Invalid or expired API key")
-
-
+        if err.response.status_code == 403:
+            st.error("Invalid or expired API key")
 
 st.sidebar.title("")
 st.sidebar.title("")
