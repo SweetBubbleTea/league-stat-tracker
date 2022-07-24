@@ -84,20 +84,22 @@ league_tab, valorant_tab = st.tabs(["League", "Valorant"])
 
 with league_tab:
     st.write("")
-    champion_asset_json = "http://ddragon.leagueoflegends.com/cdn/12.13.1/data/en_US/champion.json"
     lol_match_region = matchIdentifier(lol_region)
     lol_region = leagueRegionIdentifier(lol_region)
 
     with st.expander("Champion Win Rate"):
+        st.write("")
         champion = st.text_input("Champion")
+        current_version = str(lol_watcher.data_dragon.versions_all()[0])
+
 
     icon_ctnr, stats_ctnr, rp = st.columns([0.5, 2, 1], gap="small")
-
+    champion_asset_json = "http://ddragon.leagueoflegends.com/cdn/{}/data/en_US/champion.json".format(current_version)
     try:
         summoner = lol_watcher.summoner.by_name(lol_region, summoner_name)
         with icon_ctnr:
-            image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/profileicon/{}.png".format(
-                summoner["profileIconId"])
+            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{icon}.png".format(version=current_version,
+                icon=summoner["profileIconId"])
             st.image(image, use_column_width="auto")
         with stats_ctnr:
             ranked = lol_watcher.league.by_summoner(lol_region, summoner["id"])
@@ -131,8 +133,8 @@ with league_tab:
             for num_mastery, mastery_col in enumerate(mastery_col_lst):
                 for x in mastery_list:
                     if num_mastery == x:
-                        image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{}.png".format(
-                            mastery_list[x][1])
+                        image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{mastery}.png".format(
+                            version=current_version, mastery=mastery_list[x][1])
                         mastery_col.image(image, caption=captions[num_mastery] + " pts")
 
         st.subheader("Most Recent Matches")
@@ -171,8 +173,8 @@ with league_tab:
                                 if match_player_data["gameEndedInEarlySurrender"] or match_player_data["gameEndedInSurrender"]:
                                     surrender = True
 
-                            image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{}.png" \
-                                .format(match_player_data["championName"])
+                            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{champ}.png" \
+                                .format(version=current_version, champ=match_player_data["championName"])
                             participant = match_player_data["summonerName"] + " - lv" + str(match_player_data["champLevel"])
 
                             if count < MAX_TEAM_MEM:
@@ -218,7 +220,7 @@ with league_tab:
                             for count, item in enumerate(items):
                                 if col_index == count:
                                     if item != 0:
-                                        image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/item/{}.png".format(item)
+                                        image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/item/{item}.png".format(version=current_version, item=item)
                                         item_col.image(image, width=GAME_ITEM_SUM_WIDTH)
 
                         for name, match_player_data in summoner_spell.items():
@@ -228,10 +230,10 @@ with league_tab:
                                 summoner2 = name
 
                         with sum1_col:
-                            image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/spell/{}.png".format(summoner1)
+                            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{sum1}.png".format(version=current_version, sum1=summoner1)
                             sum1_col.image(image, width=GAME_ITEM_SUM_WIDTH)
                         with sum2_col:
-                            image = "http://ddragon.leagueoflegends.com/cdn/12.13.1/img/spell/{}.png".format(summoner2)
+                            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{sum2}.png".format(version=current_version, sum2=summoner2)
                             sum2_col.image(image, width=GAME_ITEM_SUM_WIDTH)
 
         if total_wins + total_losses != 0:
