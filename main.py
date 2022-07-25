@@ -11,6 +11,8 @@ from valorant.query import exp
 from urllib.request import urlopen
 from riotwatcher import LolWatcher, ApiError
 import streamlit as st
+import altair as alt
+import pandas as pd
 
 # League constants
 GAME_CHAMP_IMG_WIDTH = 40
@@ -88,10 +90,40 @@ with league_tab:
     lol_region = leagueRegionIdentifier(lol_region)
 
     with st.expander("Champion Win Rate"):
+
+        dataset = {
+            "patch": [],
+            "win_percent": []
+        }
+
         st.write("")
         champion = st.text_input("Champion")
         current_version = str(lol_watcher.data_dragon.versions_all()[0])
+        current_version_url = current_version[:-2].replace(".", "_")
 
+        if champion != "":
+            for index, patches in enumerate(lol_watcher.data_dragon.versions_all()):
+                if index < 5:
+                    url = "https://u.gg/lol/champions/{champ}/build?patch={patch}".format(champ=champion, patch=patches[:-2].replace(".", "_"))
+                    result = requests.get(url)
+                    doc = BeautifulSoup(result.text, "lxml")
+
+                    win_rate = doc.find("div", {"class": "win-rate okay-tier"}).next.text
+                    dataset["patch"].insert(0, float(patches[:-2]))
+                    dataset["win_percent"].insert(0, float(win_rate[:-1]))
+
+            df = pd.DataFrame(dataset)
+
+            line_chart = alt.Chart(df).mark_line(tooltip=True, point=True, strokeWidth=5).encode(
+                x=alt.X("patch:O", title="Patch", sort=dataset["patch"]),
+                y=alt.Y("win_percent:Q", title="Win Rate [%]", scale=alt.Scale(domain=[40, 60])),
+            ).properties(
+                title="{} Win Rate".format(champion.title())
+            ).configure_point(
+                size=180
+            ).interactive()
+
+            st.altair_chart((line_chart), use_container_width=True)
 
     icon_ctnr, stats_ctnr, rp = st.columns([0.5, 2, 1], gap="small")
     champion_asset_json = "http://ddragon.leagueoflegends.com/cdn/{}/data/en_US/champion.json".format(current_version)
