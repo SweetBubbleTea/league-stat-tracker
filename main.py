@@ -100,6 +100,7 @@ with league_tab:
         champion = st.text_input("Champion")
         current_version = str(lol_watcher.data_dragon.versions_all()[0])
         current_version_url = current_version[:-2].replace(".", "_")
+        st.write("")
 
         if champion != "":
             for index, patches in enumerate(lol_watcher.data_dragon.versions_all()):
@@ -141,6 +142,7 @@ with league_tab:
             except IndexError:
                 st.text("Unranked")
             st.text("Summoner level: {}".format(summoner["summonerLevel"]))
+            st.text("Patch: " + current_version[:-2])
 
         mastery = lol_watcher.champion_mastery.by_summoner(lol_region, summoner["id"])
         response = urlopen(champion_asset_json)
