@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from valorant.query import exp
 from urllib.request import urlopen
 from riotwatcher import LolWatcher, ApiError
+from streamlit_option_menu import option_menu
 import hydralit_components as hc
 import streamlit as st
 import altair as alt
@@ -44,6 +45,7 @@ items = []
 captions = []
 mastery_list = {}
 
+
 st.set_page_config(
     page_title="League Stats",
     page_icon="🧊",
@@ -55,6 +57,7 @@ st.set_page_config(
         'About': "# A League of Legends Stat Tracker"
     }
 )
+
 
 st.title("LoL Statistics")
 
@@ -84,9 +87,19 @@ with st.sidebar.expander("Valorant"):
     val_region = st.selectbox("Region", ("North America", "Asia Pacific", "Brazil", "Europe", "Korea", "Latam"))
     st.write("")
 
-league_tab, valorant_tab = st.tabs(["League", "Valorant"])
+selected = option_menu(
+    menu_title=None,
+    options=["League", "Valorant"],
+    default_index=0,
+    orientation="horizontal",
+    styles={
+        "container": {"padding": "0!important", "background-color": "#262730", "font-family": "sans serif"},
+        "icon": {"color": "orange", "font-size": "25px"},
+        "nav-link": {"font-size": "25px", "text-align": "left", "margin":"0px", "--hover-color": "#696565"},
+    }
+)
 
-with league_tab:
+if selected == "League":
     st.write("")
     lol_match_region = matchIdentifier(lol_region)
     lol_region = leagueRegionIdentifier(lol_region)
@@ -308,7 +321,7 @@ with league_tab:
         else:
             raise
 
-with valorant_tab:
+if selected == "Valorant":
     st.write("")
     val_region = valorantRegionIdentifier(val_region)
 
