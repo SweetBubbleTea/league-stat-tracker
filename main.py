@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from valorant.query import exp
 from urllib.request import urlopen
 from riotwatcher import LolWatcher, ApiError
+import hydralit_components as hc
 import streamlit as st
 import altair as alt
 import pandas as pd
@@ -74,7 +75,8 @@ with st.sidebar.expander("League of Legends"):
                               ("North America", "Europe West", "Europe Nordic & East", "Oceania", "Korea", "Japan",
                                "Brazil", "LAS", "LAN", "Russia", "Turkey"))
 
-    max_matches = st.number_input("Number of Matches to Display", min_value=MIN_NUM_MATCHES, max_value=MAX_NUM_MATCHES, step=1)
+    max_matches = st.number_input("Number of Matches to Display", min_value=MIN_NUM_MATCHES, max_value=MAX_NUM_MATCHES,
+                                  step=1)
     st.write("")
 
 with st.sidebar.expander("Valorant"):
@@ -102,36 +104,51 @@ with league_tab:
         current_version_url = current_version[:-2].replace(".", "_")
         st.write("")
 
-        if champion != "":
-            for index, patches in enumerate(lol_watcher.data_dragon.versions_all()):
-                if index < 5:
-                    url = "https://u.gg/lol/champions/{champ}/build?patch={patch}".format(champ=champion, patch=patches[:-2].replace(".", "_"))
-                    result = requests.get(url)
-                    doc = BeautifulSoup(result.text, "lxml")
+        url = "https://u.gg/lol/champions/{champ}/build?patch=12.13".format(champ=champion)
+        result = requests.get(url)
+        doc = BeautifulSoup(result.text, "lxml")
 
-                    win_rate = doc.find("div", {"class": "win-rate okay-tier"}).next.text
-                    dataset["patch"].insert(0, float(patches[:-2]))
-                    dataset["win_percent"].insert(0, float(win_rate[:-1]))
+        with hc.HyLoader('', hc.Loaders.standard_loaders, index=5):
+            try:
+                if champion != "":
+                    for index, patches in enumerate(lol_watcher.data_dragon.versions_all()):
+                        if index < 5:
+                            url = "https://u.gg/lol/champions/{champ}/build?patch={patch}".format(champ=champion,
+                                                                                                  patch=patches[
+                                                                                                        :-2].replace(
+                                                                                                      ".", "_"))
+                            result = requests.get(url)
+                            doc = BeautifulSoup(result.text, "lxml")
 
-            df = pd.DataFrame(dataset)
+                            ranking_stats = doc.find("div", {"class": "content-section champion-ranking-stats-normal"})
+                            label = ranking_stats.find_all("div", {"class": "label"})
+                            tier = str(label[1].find_parent()["class"][1])
+                            win_rate = doc.find("div", {"class": "win-rate " + tier}).next.text
+                            dataset["patch"].insert(0, float(patches[:-2]))
+                            dataset["win_percent"].insert(0, float(win_rate[:-1]))
 
-            line_chart = alt.Chart(df).mark_line(tooltip=True, point=True, strokeWidth=5).encode(
-                x=alt.X("patch:O", title="Patch", sort=dataset["patch"]),
-                y=alt.Y("win_percent:Q", title="Win Rate [%]", scale=alt.Scale(domain=[40, 60])),
-            ).properties(
-                title="{} Win Rate".format(champion.title())
-            ).configure_point(
-                size=180
-            ).interactive()
+                    df = pd.DataFrame(dataset)
 
-            st.altair_chart((line_chart), use_container_width=True)
+                    line_chart = alt.Chart(df).mark_line(tooltip=True, point=True, strokeWidth=5).encode(
+                        x=alt.X("patch:O", title="Patch", sort=dataset["patch"]),
+                        y=alt.Y("win_percent:Q", title="Win Rate [%]", scale=alt.Scale(domain=[40, 60])),
+                    ).properties(
+                        title="{} Win Rate".format(champion.title())
+                    ).configure_point(
+                        size=180
+                    ).interactive()
+
+                    st.altair_chart(line_chart, use_container_width=True)
+            except AttributeError:
+                st.error("Misspelled champion name or invalid champion")
 
     icon_ctnr, stats_ctnr, rp = st.columns([0.5, 2, 1], gap="small")
     champion_asset_json = "http://ddragon.leagueoflegends.com/cdn/{}/data/en_US/champion.json".format(current_version)
     try:
         summoner = lol_watcher.summoner.by_name(lol_region, summoner_name)
         with icon_ctnr:
-            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{icon}.png".format(version=current_version,
+            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{icon}.png".format(
+                version=current_version,
                 icon=summoner["profileIconId"])
             st.image(image, use_column_width="auto")
         with stats_ctnr:
@@ -198,18 +215,22 @@ with league_tab:
                                 cs = match_player_data["totalMinionsKilled"]
                                 if match_player_data["firstBloodKill"]:
                                     firstBlood = True
-                                items = [match_player_data["item0"], match_player_data["item1"], match_player_data["item2"],
-                                         match_player_data["item3"], match_player_data["item4"], match_player_data["item5"]]
+                                items = [match_player_data["item0"], match_player_data["item1"],
+                                         match_player_data["item2"],
+                                         match_player_data["item3"], match_player_data["item4"],
+                                         match_player_data["item5"]]
                                 summoner1 = str(match_player_data["summoner1Id"])
                                 summoner2 = str(match_player_data["summoner2Id"])
                                 role = match_player_data["teamPosition"]
                                 mode = game["gameMode"]
-                                if match_player_data["gameEndedInEarlySurrender"] or match_player_data["gameEndedInSurrender"]:
+                                if match_player_data["gameEndedInEarlySurrender"] or \
+                                        match_player_data["gameEndedInSurrender"]:
                                     surrender = True
 
                             image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{champ}.png" \
                                 .format(version=current_version, champ=match_player_data["championName"])
-                            participant = match_player_data["summonerName"] + " - lv" + str(match_player_data["champLevel"])
+                            participant = match_player_data["summonerName"] + " - lv" + str(
+                                match_player_data["champLevel"])
 
                             if count < MAX_TEAM_MEM:
                                 with m1:
@@ -254,7 +275,8 @@ with league_tab:
                             for count, item in enumerate(items):
                                 if col_index == count:
                                     if item != 0:
-                                        image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/item/{item}.png".format(version=current_version, item=item)
+                                        image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/item/{item}.png".\
+                                            format(version=current_version, item=item)
                                         item_col.image(image, width=GAME_ITEM_SUM_WIDTH)
 
                         for name, match_player_data in summoner_spell.items():
@@ -264,10 +286,12 @@ with league_tab:
                                 summoner2 = name
 
                         with sum1_col:
-                            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{sum1}.png".format(version=current_version, sum1=summoner1)
+                            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{sum1}.png".format(
+                                version=current_version, sum1=summoner1)
                             sum1_col.image(image, width=GAME_ITEM_SUM_WIDTH)
                         with sum2_col:
-                            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{sum2}.png".format(version=current_version, sum2=summoner2)
+                            image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/spell/{sum2}.png".format(
+                                version=current_version, sum2=summoner2)
                             sum2_col.image(image, width=GAME_ITEM_SUM_WIDTH)
 
         if total_wins + total_losses != 0:
@@ -448,11 +472,11 @@ with valorant_tab:
                         for index, member in enumerate(div):
                             name = member.text
                             if name == "Approx. Total Winnings:":
-                                total_winnings = div[index+1].text
+                                total_winnings = div[index + 1].text
                             elif name == "Location:":
                                 esports_location = div[index + 1].text
                             elif name == "In-Game Leader:":
-                                ign = div[index+1].text
+                                ign = div[index + 1].text
                             elif name == "Region:":
                                 esports_region = div[index + 1].text.lower().strip()
 
@@ -502,7 +526,9 @@ with st.sidebar.expander("About this app"):
     st.write("Used to track different stats from League of Legends")
 
 with st.sidebar.expander("Disclaimer"):
-    st.write("League Stat Tracker is a personal project that is **not** associated with Riot Games nor League of Legends in any shape or form.")
-    st.write("League Stat Tracker is usable without having to obtain your own personal API key from Riot Games; however, "
+    st.write("League Stat Tracker is a personal project that is **not** associated with Riot Games nor League of "
+             "Legends in any shape or form.")
+    st.write("League Stat Tracker is usable without having to obtain your own personal API key from Riot Games; "
+             "however, "
              "Development API keys from Riot Games has a shelf life of 24 hours. This would mean that the in order to "
              "use the web application, a personal API key from Riot Games **MAY** be needed.")
