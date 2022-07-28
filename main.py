@@ -1,3 +1,4 @@
+import random
 import re
 import json
 import math
@@ -58,8 +59,15 @@ st.set_page_config(
     }
 )
 
+hide_menu_style = """
+        <style>
+        #MainMenu {visibility: hidden; }
+        footer {visibility: hidden;}
+        </style>
+        """
+st.markdown(hide_menu_style, unsafe_allow_html=True)
 
-st.title("LoL Statistics")
+st.markdown("<h1 style='text-align: center;'>LoL Statistics</h1>", unsafe_allow_html=True)
 
 st.sidebar.title("Configurations")
 st.sidebar.write("")
@@ -89,7 +97,7 @@ with st.sidebar.expander("Valorant"):
 
 selected = option_menu(
     menu_title=None,
-    options=["League", "Valorant"],
+    options=["League of Legends", "Valorant"],
     default_index=0,
     orientation="horizontal",
     styles={
@@ -99,7 +107,7 @@ selected = option_menu(
     }
 )
 
-if selected == "League":
+if selected == "League of Legends":
     st.write("")
     lol_match_region = matchIdentifier(lol_region)
     lol_region = leagueRegionIdentifier(lol_region)
@@ -111,8 +119,10 @@ if selected == "League":
             "win_percent": []
         }
 
+        current_wr = 0
+
         st.write("")
-        champion = st.text_input("Champion")
+        champion = st.text_input("Champion Name")
         current_version = str(lol_watcher.data_dragon.versions_all()[0])
         current_version_url = current_version[:-2].replace(".", "_")
         st.write("")
@@ -139,6 +149,8 @@ if selected == "League":
                             win_rate = doc.find("div", {"class": "win-rate " + tier}).next.text
                             dataset["patch"].insert(0, float(patches[:-2]))
                             dataset["win_percent"].insert(0, float(win_rate[:-1]))
+                            if str(patches[:-2]) == str(current_version[:-2]):
+                                current_wr = win_rate
 
                     df = pd.DataFrame(dataset)
 
@@ -146,14 +158,47 @@ if selected == "League":
                         x=alt.X("patch:O", title="Patch", sort=dataset["patch"]),
                         y=alt.Y("win_percent:Q", title="Win Rate [%]", scale=alt.Scale(domain=[40, 60])),
                     ).properties(
-                        title="{} Win Rate".format(champion.title())
+                        title="{champ} Win Rate ({wr})".format(champ=champion.title(), wr=current_wr)
                     ).configure_point(
                         size=180
                     ).interactive()
 
                     st.altair_chart(line_chart, use_container_width=True)
             except AttributeError:
-                st.error("Misspelled champion name or invalid champion")
+                st.error("No data available")
+
+    with st.expander("Champion Randomizer"):
+
+        st.markdown(
+            """
+            <style>
+                .stButton > button {
+                    width: 100%;
+                }
+            </style>
+            """,
+            unsafe_allow_html = True
+        )
+        col1, col2, col3 = st.columns(3)
+        if col2.button('Roll'):
+            max_num_champs = len(lol_watcher.data_dragon.champions(version=current_version)["data"])
+            champ_num = random.randint(1, max_num_champs)
+
+            for champ_count, champ_name in enumerate(lol_watcher.data_dragon.champions(version=current_version)["data"]):
+                if champ_count == champ_num:
+                    st.markdown(
+                        """
+                            <style>
+                                .css-13sdm1b p {
+                                    text-align: center;
+                                    font-size: larger;
+                                }
+                            </style>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                    col2.write(champ_name.upper())
+                    break
 
     icon_ctnr, stats_ctnr, rp = st.columns([0.5, 2, 1], gap="small")
     champion_asset_json = "http://ddragon.leagueoflegends.com/cdn/{}/data/en_US/champion.json".format(current_version)
