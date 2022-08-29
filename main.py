@@ -127,10 +127,6 @@ if selected == "League of Legends":
         current_version_url = current_version[:-2].replace(".", "_")
         st.write("")
 
-        url = "https://u.gg/lol/champions/{champ}/build?patch=12.13".format(champ=champion)
-        result = requests.get(url)
-        doc = BeautifulSoup(result.text, "lxml")
-
         with hc.HyLoader('', hc.Loaders.standard_loaders, index=5):
             try:
                 if champion != "":
@@ -287,7 +283,7 @@ if selected == "League of Legends":
 
                             image = "http://ddragon.leagueoflegends.com/cdn/{version}/img/champion/{champ}.png" \
                                 .format(version=current_version, champ=match_player_data["championName"])
-                            participant = match_player_data["summonerName"] + " - lv" + str(
+                            participant = match_player_data["summonerName"] + " - lv " + str(
                                 match_player_data["champLevel"])
 
                             if count < MAX_TEAM_MEM:
