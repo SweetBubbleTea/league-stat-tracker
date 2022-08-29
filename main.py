@@ -55,7 +55,7 @@ st.set_page_config(
     menu_items={
         'Get Help': "https://github.com/SweetBubbleTea/league-stat-tracker",
         'Report a bug': "https://github.com/SweetBubbleTea/league-stat-tracker/issues",
-        'About': "# A League of Legends Stat Tracker"
+        'About': "# A Stat Tracker for Riot Games Titles"
     }
 )
 
@@ -67,7 +67,7 @@ hide_menu_style = """
         """
 st.markdown(hide_menu_style, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align: center;'>LoL Statistics</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Riot Tea</h1>", unsafe_allow_html=True)
 
 st.sidebar.title("Configurations")
 st.sidebar.write("")
@@ -417,17 +417,21 @@ if selected == "Valorant":
             except requests.exceptions.HTTPError:
                 pass
 
-        with st.expander("Radiant Query"):
-            st.write("")
-            st.info("Obtains the queried player(s) in Radiant")
+        # Raidant Query is very buggy, and it doesn't work as expected. It will only search for exact matches, and it
+        # will not be able to search for names that contains the full name. This will be changed in the future, but
+        # for now it will be removed.
 
-            radiant_query = st.text_input("Esports org or player name")
-            if radiant_query != "":
-                for pg in range(0, 5):
-                    leaderboard = val_client.get_leaderboard(size=LEADERBOARD_SIZE, page=pg)
-                    players = leaderboard.players.get_all(gameName=exp('.startswith', radiant_query))
-                    for name in players:
-                        st.write(name.gameName)
+        # with st.expander("Radiant Query"):
+        #     st.write("")
+        #     st.info("Obtains the queried player(s) in Radiant")
+        #
+        #     radiant_query = st.text_input("Esports org or player name")
+        #     if radiant_query != "":
+        #         for pg in range(0, 5):
+        #             leaderboard = val_client.get_leaderboard(size=LEADERBOARD_SIZE, page=pg)
+        #             players = leaderboard.players.get_all(gameName=exp('.startswith', radiant_query))
+        #             for name in players:
+        #                 st.write(name.gameName)
 
         with st.expander("Skins"):
             st.write("")
