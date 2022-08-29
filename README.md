@@ -1,22 +1,26 @@
 
-# League Stat Tracker
+# Riot Tea
 
 ![MIT License](https://img.shields.io/github/license/sweetbubbletea/league-stat-tracker)
 ![issues](https://img.shields.io/github/issues/sweetbubbletea/league-stat-tracker)
 ![website](https://img.shields.io/website?url=https%3A%2F%2Fleague-stat-tracker.herokuapp.com)
 ![last commit](https://img.shields.io/github/last-commit/sweetbubbletea/league-stat-tracker)
 
-A web application that is designed to provide statistical data for both League of Legends and Riot Games. 
-For League, it provides data on champion mastery, win rate, itemization, creep score, KDA, and many more. For Valorant, 
-it supplies a leaderboard, and many more. 
+A web application that is designed to provide statistical data for several Riot Games titles, including League of Legends and Valorant. 
+
+For League, it provides data on champion mastery, win rate, itemization, creep score, KDA, and many more. 
+
+For Valorant, it supplies a leaderboard, esports query, skin query, and many more. 
 
 ## Disclaimers
 
-League Stat Tracker is a personal project that is not associated with Riot Games nor League of Legends in any shape or form.
+Riot Tea is a personal project that is not associated with any Riot Games titles in any shape or form.
 
-League Stat Tracker is functional without having to obtain your own personal API key from Riot Games; however,
+Riot Tea is functional without having to obtain your own personal API key from Riot Games; however,
 Development API keys from Riot Games has a shelf life of 24 hours. This would mean that the in order to use the web application, 
 a personal API key from Riot Games MAY be needed. 
+
+Currently still in devleopment. Use at your own discretion. 
 
 ## Built With
 
@@ -28,7 +32,7 @@ a personal API key from Riot Games MAY be needed.
 
 ## Acknowledgements 
 
-- [Liquidpedia](https://liquipedia.net/valorant/Main_Page) - Used to scrap data on Esport organizations
+- [Liquidpedia](https://liquipedia.net/valorant/Main_Page) - Used to obtain data on Esport organizations
 
 ## Author
 
