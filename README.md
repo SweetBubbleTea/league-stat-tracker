@@ -7,8 +7,10 @@
 ![last commit](https://img.shields.io/github/last-commit/sweetbubbletea/league-stat-tracker)
 
 A web application that is designed to provide statistical data for several Riot Games titles, including League of Legends and Valorant. 
-For League, it provides data on champion mastery, win rate, itemization, creep score, KDA, and many more. For Valorant, 
-it supplies a leaderboard, esports query, skin query, and many more. 
+
+For League, it provides data on champion mastery, win rate, itemization, creep score, KDA, and many more. 
+
+For Valorant, it supplies a leaderboard, esports query, skin query, and many more. 
 
 ## Disclaimers
 
