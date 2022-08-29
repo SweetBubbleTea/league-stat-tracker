@@ -1,5 +1,5 @@
 
-# League Stat Tracker
+# Riot Tea
 
 ![MIT License](https://img.shields.io/github/license/sweetbubbletea/league-stat-tracker)
 ![issues](https://img.shields.io/github/issues/sweetbubbletea/league-stat-tracker)
