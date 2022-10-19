@@ -568,7 +568,7 @@ if selected == "Valorant":
                         st.text("IGN:" + ign)
                 except AttributeError:
                     st.error("Provide the EXACT spelling of the org name for best results. "
-                             "Not all common aliases will be catched.")
+                             "Not all common aliases will be catched. Search may not reflect franchising.")
                 st.write("")
 
     except requests.exceptions.HTTPError as err:
